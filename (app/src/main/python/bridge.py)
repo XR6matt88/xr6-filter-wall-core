@@ -1,0 +1,20 @@
+import asyncio
+from filter_wall_core import NetworkPipeline, NetworkPacket, PacketStatus
+
+pipeline = NetworkPipeline()
+
+def inspect_from_android(packet_id: str, domain: str, sni: str, payload: bytes = None) -> dict:
+    async def _run():
+        pkt = NetworkPacket(
+            packet_id=packet_id,
+            domain=domain if domain else None,
+            sni=sni if sni else None,
+            media_payload=bytes(payload) if payload else None
+        )
+        res = await pipeline.inspect_packet(pkt)
+        return {
+            "permitted": res.status == PacketStatus.PERMITTED,
+            "status": res.status.value,
+            "reason": res.reason
+        }
+    return asyncio.run(_run())
